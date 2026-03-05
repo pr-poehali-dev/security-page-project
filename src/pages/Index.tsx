@@ -94,6 +94,7 @@ export default function Index() {
   const [finished, setFinished] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [answers, setAnswers] = useState<(boolean | null)[]>(Array(5).fill(null));
 
   const currentSet = allQuizSets[quizSetIndex];
 
@@ -108,9 +109,15 @@ export default function Index() {
 
   const handleAnswer = (i: number) => {
     if (answered) return;
+    const isCorrect = i === currentSet[quizStep].correct;
     setSelected(i);
     setAnswered(true);
-    if (i === currentSet[quizStep].correct) setScore((p) => p + 1);
+    if (isCorrect) setScore((p) => p + 1);
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[quizStep] = isCorrect;
+      return next;
+    });
   };
 
   const handleNext = () => {
@@ -131,6 +138,7 @@ export default function Index() {
     setScore(0);
     setFinished(false);
     setAnswered(false);
+    setAnswers(Array(5).fill(null));
   };
 
   const navItems: { key: Section; label: string }[] = [
@@ -354,7 +362,13 @@ export default function Index() {
                     <div
                       key={i}
                       className={`h-2 w-8 rounded-full transition-all duration-300 ${
-                        i < quizStep ? "bg-lime-dark" : i === quizStep ? "bg-navy" : "bg-gray-100"
+                        i === quizStep
+                          ? "bg-navy"
+                          : answers[i] === true
+                          ? "bg-lime-dark"
+                          : answers[i] === false
+                          ? "bg-red-500"
+                          : "bg-gray-100"
                       }`}
                     />
                   ))}
